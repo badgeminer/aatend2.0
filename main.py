@@ -1,9 +1,10 @@
 import pygame,enum,sqlite3
 import json, sys, datetime
 import colorama
-from termcolor import colored
+from termcolor import colored 
 import configparser
 import logging
+import csv
 import coloredlogs
 import verboselogs
 
@@ -74,6 +75,7 @@ menu = [
     menuitem("Reset",mode.reset),
     menuitem("Fetch DB",mode.fetch_DB),
     menuitem("Here",mode.hered),
+    menuitem("Save",mode.save),
     menuitem("Swap class",mode.swap),
 ]
 conn = sqlite3.connect("AATEND.DB")
@@ -112,6 +114,18 @@ while True:
         conn.commit()
         for k,v in clsz.items():
             hnh[k] =True
+    elif cmd == mode.save:
+        with open('export.csv', 'w', newline='') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter='§',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            spamwriter.writerow(["IDX","name","time","direction"])
+            sqlite_select_query = """SELECT * from tbl"""
+            cur.execute(sqlite_select_query)
+            records = cur.fetchall()
+            for i,n,t,d in records:
+                spamwriter.writerow([i,n,t,d])
+        cmd = mode.scan
+
     scr.fill((0,0,0))
     HERE.reset()
     typed.reset()

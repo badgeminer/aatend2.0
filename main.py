@@ -117,7 +117,7 @@ while True:
     typed.reset()
     pygame.draw.line(scr,"white",(0,35),(1360,35))
     NOTHERE.reset()
-    typed.tprint(scr,f"Auto Atendance 2.0-ALPHA   |{typd.center(15)}|")
+    typed.tprint(scr,f"{'Auto Atendance 2.0-BETA'.ljust(27)}   |{typd.center(15)}|")
     if cmd == mode.scan:
         for k,v in clsz.items():
             if hnh[k]:

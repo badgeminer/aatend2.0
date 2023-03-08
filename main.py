@@ -150,7 +150,7 @@ while True:
         I = 0
         for k in classez:
             if I == clssel:
-                HERE.Mprint(scr,k)
+                HERE.Mprint(scr,k) 
             else:
                 HERE.mprint(scr,k)
             I += 1

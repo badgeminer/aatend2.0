@@ -32,11 +32,11 @@ class TextPrint:
         screen.blit(text_bitmap, (self.x, self.y))
         self.y += self.line_height
     def mprint(self, screen, text):
-        text_bitmap = self.font.render(text.center(12), True, "white")
+        text_bitmap = self.font.render(text.center(14), True, "white")
         screen.blit(text_bitmap, (self.x, self.y))
         self.y += self.line_height
     def Mprint(self, screen, text):
-        text_bitmap = self.font.render(f">{text.center(10)}<", True, "white")
+        text_bitmap = self.font.render(f">{text.center(12)}<", True, "white")
         screen.blit(text_bitmap, (self.x, self.y))
         self.y += self.line_height
 

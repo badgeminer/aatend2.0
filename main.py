@@ -42,6 +42,14 @@ class TextPrint:
         text_bitmap = self.font.render(f">{text.center(12)}<", True, "white")
         screen.blit(text_bitmap, (self.x, self.y))
         self.y += self.line_height
+    def dprint(self, screen, text):
+        text_bitmap = self.font.render(text.center(14), True, "red")
+        screen.blit(text_bitmap, (self.x, self.y))
+        self.y += self.line_height
+    def Dprint(self, screen, text):
+        text_bitmap = self.font.render(f">{text.center(12)}<", True, "red")
+        screen.blit(text_bitmap, (self.x, self.y))
+        self.y += self.line_height
 
     def reset(self):
         self.x = self.orgn[0]
@@ -64,7 +72,8 @@ classz = json.load(f)
 clsz = classz["9-2"]
 hnh = {}
 typd = ""
-cmd = mode.swap
+#cmd = mode.swap
+cmd = mode.scan
 menusel = 0
 class menuitem:
     def __init__(self,txt,code) -> None:
@@ -75,7 +84,7 @@ for k,v in clsz.items():
 menu = [
     menuitem("Scan",mode.scan),
     menuitem("Reset",mode.reset),
-    menuitem("Fetch DB",mode.fetch_DB),
+    menuitem("Get Logs",mode.fetch_DB),
     menuitem("Here",mode.hered),
     menuitem("Save",mode.save),
     menuitem("Swap class",mode.swap),
@@ -101,8 +110,9 @@ classez = tuple(classz.keys())
 clssel = 0
 edtn =""
 edtid = ""
-titel = 'Auto Atendance 2.0-PreRelease 1 DEMO'.ljust(40)
-
+#titel = 'Auto Atendance 2.0-PreRelease 1 DEMO [PRESS F1]'.ljust(40)
+titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
+demo = True
 while True:
     if cmd == mode.reset:
         menusel =0
@@ -122,7 +132,7 @@ while True:
         conn.commit()
         for k,v in clsz.items():
             hnh[k] =True
-    elif cmd == mode.save:
+    elif cmd == mode.save and not demo:
         with open('export.csv', 'w', newline='') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter='§',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -133,6 +143,7 @@ while True:
             for i,n,t,d in records:
                 spamwriter.writerow([i,n,t,d])
         cmd = mode.scan
+    elif cmd in (mode.editid,mode.swap,mode.save) and demo: cmd = mode.scan
 
     scr.fill((0,0,0))
     HERE.reset()
@@ -162,12 +173,20 @@ while True:
             HERE.tprint(scr,f"{k.center(10)}: {v}")
     elif cmd == mode.menu:
         typed.tprint(scr,f"{titel}   |{''.center(15)}|")
+        HERE.mprint(scr,"AUTO ATTENDACE By Ben H")
+        if demo:HERE.dprint(scr,"DEMO VESION")
         I = 0
         for i in menu:
-            if I == menusel:
-                HERE.Mprint(scr,i.txt)
+            if i.code in (mode.editid,mode.swap,mode.save) and demo:
+                if I == menusel:
+                    HERE.Dprint(scr,i.txt)
+                else:
+                    HERE.dprint(scr,i.txt)
             else:
-                HERE.mprint(scr,i.txt)
+                if I == menusel:
+                    HERE.Mprint(scr,i.txt)
+                else:
+                    HERE.mprint(scr,i.txt)
             I += 1
     elif cmd == mode.swap:
         typed.tprint(scr,f"{titel}   |{''.center(15)}|")
@@ -192,7 +211,7 @@ while True:
         if e.type == pygame.QUIT:
             sys.exit()
         elif e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_F12:
+            if e.key == pygame.K_F1:
                 cmd = mode.menu
             elif e.key == pygame.K_ESCAPE:
                 sys.exit()

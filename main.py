@@ -20,6 +20,8 @@ class mode(enum.Enum):
     fetch_DB = enum.auto()
     hered = enum.auto()
     swap = enum.auto()
+    editid =enum.auto()
+    edtname = enum.auto()
 
 class TextPrint:
     def __init__(self,orgn=(10,10)):
@@ -62,7 +64,7 @@ classz = json.load(f)
 clsz = classz["9-2"]
 hnh = {}
 typd = ""
-cmd = mode.scan
+cmd = mode.swap
 menusel = 0
 class menuitem:
     def __init__(self,txt,code) -> None:
@@ -77,6 +79,7 @@ menu = [
     menuitem("Here",mode.hered),
     menuitem("Save",mode.save),
     menuitem("Swap class",mode.swap),
+    menuitem("Edit",mode.editid),
 ]
 conn = sqlite3.connect("AATEND.DB")
 conn.execute(f"""CREATE TABLE if not exists tbl (
@@ -86,15 +89,20 @@ conn.execute(f"""CREATE TABLE if not exists tbl (
 	dir TEXT NOT NULL
 );""")
 cur = conn.cursor()
-
+clsselN = "9-2"
 def swap(clas):
-    global clsz,hnh
+    global clsz,hnh,clsselN
     clsz = classz[clas]
     hnh = {}
+    clsselN = clas
     for k,v in clsz.items():
         hnh[k] = False
 classez = tuple(classz.keys())
 clssel = 0
+edtn =""
+edtid = ""
+titel = 'Auto Atendance 2.0-PreRelease 1 DEMO'.ljust(40)
+
 while True:
     if cmd == mode.reset:
         menusel =0
@@ -131,14 +139,29 @@ while True:
     typed.reset()
     pygame.draw.line(scr,"white",(0,35),(1360,35))
     NOTHERE.reset()
-    typed.tprint(scr,f"{'Auto Atendance 2.0-BETA'.ljust(27)}   |{typd.center(15)}|")
+    #typed.tprint(scr,f"{titel}   |{typd.center(15)}|")
     if cmd == mode.scan:
+        typed.tprint(scr,f"{titel}   |{typd.center(15)}|")
         for k,v in clsz.items():
             if hnh[k]:
                 HERE.tprint(scr,v)
             else:
                 NOTHERE.tprint(scr,v)
+    elif cmd == mode.editid:
+        typed.tprint(scr,f"{titel}   |{edtid.center(15)}|")
+        NOTHERE.tprint(scr,f"Editing: {clsselN}")
+        NOTHERE.tprint(scr,"Please enter id or scan card")
+        for k,v in clsz.items():
+            HERE.tprint(scr,f"{k.center(10)}: {v}")
+    elif cmd == mode.edtname:
+        typed.tprint(scr,f"{titel}   |{edtn.center(15)}|")
+        NOTHERE.tprint(scr,f"Editing: {clsselN}")
+        NOTHERE.tprint(scr,"Please enter name")
+        NOTHERE.tprint(scr,f"Id: {edtid}")
+        for k,v in clsz.items():
+            HERE.tprint(scr,f"{k.center(10)}: {v}")
     elif cmd == mode.menu:
+        typed.tprint(scr,f"{titel}   |{''.center(15)}|")
         I = 0
         for i in menu:
             if I == menusel:
@@ -147,6 +170,7 @@ while True:
                 HERE.mprint(scr,i.txt)
             I += 1
     elif cmd == mode.swap:
+        typed.tprint(scr,f"{titel}   |{''.center(15)}|")
         I = 0
         for k in classez:
             if I == clssel:
@@ -155,6 +179,7 @@ while True:
                 HERE.mprint(scr,k)
             I += 1
     elif cmd == mode.fetch_DB:
+        typed.tprint(scr,f"{titel}   |{''.center(15)}|")
         HERE.tprint(scr,"IDX  first/last name   time: D/M/Y H:M  direction")
         HERE.tprint(scr,"--- ----------------- ----------------- ---------")
         sqlite_select_query = """SELECT * from tbl"""
@@ -205,4 +230,28 @@ while True:
                     swap(classez[clssel])
                     cmd = mode.scan
                     menusel =0
+            elif cmd == mode.editid:
+                
+                if e.key == pygame.K_RETURN:
+                    hnh[edtid] = False
+                    cmd = mode.edtname
+                elif e.key == pygame.K_BACKSPACE:
+                    edtid = edtid[0:-1]
+                else:
+                    edtid += e.unicode
+            elif cmd == mode.edtname:
+                
+                if e.key == pygame.K_RETURN:
+                    clsz[edtid] = edtn
+                    classz[clsselN] =clsz
+                    edtid = ""
+                    edtn = ""
+                    f = open("usrs.json","w")
+                    json.dump(classz,f)
+                    f.close()
+                    cmd = mode.editid
+                elif e.key == pygame.K_BACKSPACE:
+                    edtn = edtn[0:-1]
+                else:
+                    edtn += e.unicode
         

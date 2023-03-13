@@ -22,6 +22,7 @@ class mode(enum.Enum):
     swap = enum.auto()
     editid =enum.auto()
     edtname = enum.auto()
+    Tmode = enum.auto()
 
 class TextPrint:
     def __init__(self,orgn=(10,10)):
@@ -40,6 +41,10 @@ class TextPrint:
         self.y += self.line_height
     def Mprint(self, screen, text):
         text_bitmap = self.font.render(f">{text.center(12)}<", True, "white")
+        screen.blit(text_bitmap, (self.x, self.y))
+        self.y += self.line_height
+    def Sprint(self, screen, text):
+        text_bitmap = self.font.render(f"{text}", True, "black","white")
         screen.blit(text_bitmap, (self.x, self.y))
         self.y += self.line_height
     def dprint(self, screen, text):
@@ -83,6 +88,7 @@ for k,v in clsz.items():
     hnh[k] = False
 menu = [
     menuitem("Scan",mode.scan),
+    menuitem("Move",mode.Tmode),
     menuitem("Reset",mode.reset),
     menuitem("Get Logs",mode.fetch_DB),
     menuitem("Here",mode.hered),
@@ -99,9 +105,13 @@ conn.execute(f"""CREATE TABLE if not exists tbl (
 );""")
 cur = conn.cursor()
 clsselN = "9-2"
+ccls = ()
+cclen = 0
 def swap(clas):
-    global clsz,hnh,clsselN
+    global clsz,hnh,clsselN,ccls,cclen
     clsz = classz[clas]
+    ccls = tuple(clsz.keys())
+    cclen = len(ccls)
     hnh = {}
     clsselN = clas
     for k,v in clsz.items():
@@ -110,9 +120,12 @@ classez = tuple(classz.keys())
 clssel = 0
 edtn =""
 edtid = ""
-#titel = 'Auto Atendance 2.0-PreRelease 1 DEMO [PRESS F1]'.ljust(40)
-titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
-demo = True
+titel = 'Auto Atendance 2.0-PreRelease 1'.ljust(40)
+#titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
+demo = False
+lw,lh = typed.font.size("-")
+tmdsel = 0
+swap("9-2")
 while True:
     if cmd == mode.reset:
         menusel =0
@@ -158,6 +171,21 @@ while True:
                 HERE.tprint(scr,v)
             else:
                 NOTHERE.tprint(scr,v)
+    elif cmd == mode.Tmode:
+        typed.tprint(scr,f"{titel}   |{clsz[ccls[tmdsel]].center(15)}|{'T-Mode: Do Not Scan'.rjust(30)}")
+        tmpsel = ccls[tmdsel]
+        for k,v in clsz.items():
+            if hnh[k]:
+                if k == tmpsel:
+                    HERE.Sprint(scr,v)
+                else:
+                    HERE.tprint(scr,v)
+            else:
+                if k == tmpsel:
+                    NOTHERE.Sprint(scr,v)
+                else:
+                    NOTHERE.tprint(scr,v)
+
     elif cmd == mode.editid:
         typed.tprint(scr,f"{titel}   |{edtid.center(15)}|")
         NOTHERE.tprint(scr,f"Editing: {clsselN}")
@@ -211,7 +239,7 @@ while True:
         if e.type == pygame.QUIT:
             sys.exit()
         elif e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_F1:
+            if e.key == pygame.K_F12  :
                 cmd = mode.menu
             elif e.key == pygame.K_ESCAPE:
                 sys.exit()
@@ -273,4 +301,38 @@ while True:
                     edtn = edtn[0:-1]
                 else:
                     edtn += e.unicode
+            elif cmd == mode.Tmode:
+                if e.key == pygame.K_UP:
+                    tmdsel -= 1
+                    if tmdsel < 0: tmdsel = cclen
+                elif e.key == pygame.K_DOWN:
+                    tmdsel += 1
+                    if tmdsel > cclen: tmdsel = 0
+                elif e.key == pygame.K_RETURN:
+                    now = datetime.datetime.now()
+                    hnh[ccls[tmdsel]] = not hnh[ccls[tmdsel]]
+                    if hnh[ccls[tmdsel]]: direc = "in"
+                    else: direc = "out"
+                    cur.execute("""INSERT INTO tbl(name,time,dir)
+              VALUES(?,?,?)""",(clsz[ccls[tmdsel]],now.strftime("%d/%m/%Y %H:%M"),direc))
+                    conn.commit()
+            elif cmd == mode.fetch_DB:
+                if e.key == pygame.K_F10 and not demo:
+                    with open("logs.txt","w") as f:
+                        f.write("IDX  first/last name   time: D/M/Y H:M  direction")
+                        f.write("--- ----------------- ----------------- ---------")
+                        sqlite_select_query = """SELECT * from tbl"""
+                        cur.execute(sqlite_select_query)
+                        records = cur.fetchall()
+                        cur.execute("DROP TABLE tbl")
+                        conn.commit()
+                        conn.execute(f"""CREATE TABLE if not exists tbl (
+                            key INTEGER PRIMARY KEY,
+                            name TEXT NOT NULL,
+                            time TEXT NOT NULL,
+                            dir TEXT NOT NULL
+                        );""")
+                        conn.commit()
+                        for i,n,t,d in records:
+                            f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}")
         

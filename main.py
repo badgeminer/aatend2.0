@@ -124,6 +124,7 @@ titel = 'Auto Atendance 2.0-PreRelease 1'.ljust(40)
 #titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
 demo = False
 lw,lh = typed.font.size("-")
+print((768-40)/lh)
 tmdsel = 0
 swap("9-2")
 while True:
@@ -232,6 +233,8 @@ while True:
         sqlite_select_query = """SELECT * from tbl"""
         cur.execute(sqlite_select_query)
         records = cur.fetchall()
+        if len(records) > 31:
+            records = records[len(records)%31:]
         for i,n,t,d in records:
             HERE.tprint(scr,f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}")
     pygame.display.flip()
@@ -319,8 +322,8 @@ while True:
             elif cmd == mode.fetch_DB:
                 if e.key == pygame.K_F10 and not demo:
                     with open("logs.txt","w") as f:
-                        f.write("IDX  first/last name   time: D/M/Y H:M  direction")
-                        f.write("--- ----------------- ----------------- ---------")
+                        f.write("IDX  first/last name   time: D/M/Y H:M  direction\n")
+                        f.write("--- ----------------- ----------------- ---------\n")
                         sqlite_select_query = """SELECT * from tbl"""
                         cur.execute(sqlite_select_query)
                         records = cur.fetchall()
@@ -334,5 +337,5 @@ while True:
                         );""")
                         conn.commit()
                         for i,n,t,d in records:
-                            f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}")
+                            f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}\n")
         

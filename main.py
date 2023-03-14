@@ -307,10 +307,10 @@ while True:
             elif cmd == mode.Tmode:
                 if e.key == pygame.K_UP:
                     tmdsel -= 1
-                    if tmdsel < 0: tmdsel = cclen
+                    if tmdsel < 0: tmdsel = cclen-1
                 elif e.key == pygame.K_DOWN:
                     tmdsel += 1
-                    if tmdsel > cclen: tmdsel = 0
+                    if tmdsel > cclen-1: tmdsel = 0
                 elif e.key == pygame.K_RETURN:
                     now = datetime.datetime.now()
                     hnh[ccls[tmdsel]] = not hnh[ccls[tmdsel]]
@@ -319,6 +319,12 @@ while True:
                     cur.execute("""INSERT INTO tbl(name,time,dir)
               VALUES(?,?,?)""",(clsz[ccls[tmdsel]],now.strftime("%d/%m/%Y %H:%M"),direc))
                     conn.commit()
+                elif e.key == pygame.K_F10 and not demo:
+                    from barcode import EAN8
+                    from barcode.writer import SVGWriter
+                    for k,v in clsz.items():
+                        with open(f"codes/{v}.svg", "wb") as f:
+                            EAN8(k, writer=SVGWriter()).write(f)
             elif cmd == mode.fetch_DB:
                 if e.key == pygame.K_F10 and not demo:
                     with open("logs.txt","w") as f:
@@ -338,4 +344,5 @@ while True:
                         conn.commit()
                         for i,n,t,d in records:
                             f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}\n")
+                
         

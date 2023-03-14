@@ -250,6 +250,7 @@ while True:
                 
                 if e.key == pygame.K_RETURN:
                     try:
+                        typd = typd.removeprefix("978")
                         now = datetime.datetime.now()
                         hnh[typd] = not hnh[typd]
                         if hnh[typd]: direc = "in"
@@ -320,11 +321,14 @@ while True:
               VALUES(?,?,?)""",(clsz[ccls[tmdsel]],now.strftime("%d/%m/%Y %H:%M"),direc))
                     conn.commit()
                 elif e.key == pygame.K_F10 and not demo:
-                    from barcode import EAN8
+                    from barcode import EAN8,ISBN10
                     from barcode.writer import SVGWriter
                     for k,v in clsz.items():
                         with open(f"codes/{v}.svg", "wb") as f:
-                            EAN8(k, writer=SVGWriter()).write(f)
+                            if len(k) == 8:
+                                EAN8(k, writer=SVGWriter()).write(f)
+                            elif len(k) == 10:
+                                ISBN10(k, writer=SVGWriter()).write(f)
             elif cmd == mode.fetch_DB:
                 if e.key == pygame.K_F10 and not demo:
                     with open("logs.txt","w") as f:

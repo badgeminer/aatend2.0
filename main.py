@@ -1,4 +1,5 @@
 import pygame,enum,sqlite3
+import win32cred
 import json, sys, datetime
 import colorama
 from termcolor import colored 
@@ -23,6 +24,8 @@ class mode(enum.Enum):
     editid =enum.auto()
     edtname = enum.auto()
     Tmode = enum.auto()
+    Tmenu = enum.auto()
+    TAUTH = enum.auto()
 
 class TextPrint:
     def __init__(self,orgn=(10,10)):
@@ -92,9 +95,13 @@ menu = [
     menuitem("Reset",mode.reset),
     menuitem("Get Logs",mode.fetch_DB),
     menuitem("Here",mode.hered),
-    menuitem("Save",mode.save),
     menuitem("Swap class",mode.swap),
+    menuitem("Config",mode.TAUTH),
+    
+]
+Tmenu = [
     menuitem("Edit",mode.editid),
+    menuitem("Save",mode.save),
 ]
 conn = sqlite3.connect("AATEND.DB")
 conn.execute(f"""CREATE TABLE if not exists tbl (
@@ -120,13 +127,15 @@ classez = tuple(classz.keys())
 clssel = 0
 edtn =""
 edtid = ""
-titel = 'Auto Atendance 2.0-PreRelease 1'.ljust(40)
+titel = 'Auto Atendance 2.0'.ljust(40)
 #titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
 demo = False
 lw,lh = typed.font.size("-")
 print((768-40)/lh)
 tmdsel = 0
 swap("9-2")
+Menusel = 0
+auth = ("AutoAttendance\\dev",'dev',False)
 while True:
     if cmd == mode.reset:
         menusel =0
@@ -137,6 +146,15 @@ while True:
         conn.commit()
         for k,v in clsz.items():
             hnh[k] =False
+    elif cmd == mode.TAUTH:
+        try:
+            if win32cred.CredUIPromptForCredentials("AutoAttendance") == auth:
+                cmd = mode.Tmenu
+                
+            else:
+                cmd = mode.menu
+        except:
+            cmd = mode.menu
     elif cmd == mode.hered:
         menusel =0
         cmd = mode.scan
@@ -172,6 +190,21 @@ while True:
                 HERE.tprint(scr,v)
             else:
                 NOTHERE.tprint(scr,v)
+    elif cmd == mode.Tmenu:
+        typed.tprint(scr,f"{titel}   |{'Config'.center(15)}|{'config: Do Not Scan'.rjust(30)}")
+        I = 0
+        for i in Tmenu:
+            if i.code in (mode.editid,mode.swap,mode.save) and demo:
+                if I == Menusel:
+                    HERE.Dprint(scr,i.txt)
+                else:
+                    HERE.dprint(scr,i.txt)
+            else:
+                if I == Menusel:
+                    HERE.Mprint(scr,i.txt)
+                else:
+                    HERE.mprint(scr,i.txt)
+            I += 1
     elif cmd == mode.Tmode:
         typed.tprint(scr,f"{titel}   |{clsz[ccls[tmdsel]].center(15)}|{'T-Mode: Do Not Scan'.rjust(30)}")
         tmpsel = ccls[tmdsel]
@@ -272,6 +305,13 @@ while True:
                     menusel += 1
                 elif e.key == pygame.K_RETURN:
                     cmd = menu[menusel].code
+            elif cmd == mode.Tmenu:
+                if e.key == pygame.K_UP:
+                    Menusel -= 1
+                elif e.key == pygame.K_DOWN:
+                    Menusel += 1
+                elif e.key == pygame.K_RETURN:
+                    cmd = Tmenu[Menusel].code
             elif cmd == mode.swap:
                 if e.key == pygame.K_UP:
                     clssel -= 1

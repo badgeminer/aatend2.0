@@ -72,6 +72,7 @@ class TextPrint:
 typed = TextPrint()
 HERE = TextPrint((10,40))
 NOTHERE = TextPrint(((1360/2)+10,40))
+colorama.init()
 verboselogs.install()
 logging.basicConfig()
 coloredlogs.install(level=5,fmt="%(asctime)s [%(levelname)s]: %(message)s")
@@ -83,6 +84,7 @@ typd = ""
 #cmd = mode.swap
 cmd = mode.scan
 menusel = 0
+logging.log(5,"starting...")
 class menuitem:
     def __init__(self,txt,code) -> None:
         self.txt = txt
@@ -95,13 +97,13 @@ menu = [
     menuitem("Reset",mode.reset),
     menuitem("Get Logs",mode.fetch_DB),
     menuitem("Here",mode.hered),
-    menuitem("Swap class",mode.swap),
     menuitem("Config",mode.TAUTH),
     
 ]
 Tmenu = [
     menuitem("Edit",mode.editid),
     menuitem("Save",mode.save),
+    menuitem("Swap class",mode.swap),
 ]
 conn = sqlite3.connect("AATEND.DB")
 conn.execute(f"""CREATE TABLE if not exists tbl (
@@ -131,11 +133,12 @@ titel = 'Auto Atendance 2.0'.ljust(40)
 #titel = 'Auto Atendance DEMO [PRESS F1] Scan Card'.ljust(40)
 demo = False
 lw,lh = typed.font.size("-")
-print((768-40)/lh)
+logging.log(15,(768-40)/lh)
 tmdsel = 0
 swap("9-2")
 Menusel = 0
 auth = ("AutoAttendance\\dev",'dev',False)
+logging.log(35,"Ready")
 while True:
     if cmd == mode.reset:
         menusel =0
@@ -371,22 +374,30 @@ while True:
                                 ISBN10(k, writer=SVGWriter()).write(f)
             elif cmd == mode.fetch_DB:
                 if e.key == pygame.K_F10 and not demo:
-                    with open("logs.txt","w") as f:
-                        f.write("IDX  first/last name   time: D/M/Y H:M  direction\n")
-                        f.write("--- ----------------- ----------------- ---------\n")
-                        sqlite_select_query = """SELECT * from tbl"""
-                        cur.execute(sqlite_select_query)
-                        records = cur.fetchall()
-                        cur.execute("DROP TABLE tbl")
-                        conn.commit()
-                        conn.execute(f"""CREATE TABLE if not exists tbl (
-                            key INTEGER PRIMARY KEY,
-                            name TEXT NOT NULL,
-                            time TEXT NOT NULL,
-                            dir TEXT NOT NULL
-                        );""")
-                        conn.commit()
-                        for i,n,t,d in records:
-                            f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}\n")
+                    try:
+                        if win32cred.CredUIPromptForCredentials("AutoAttendance") == auth:
+                            with open("logs.txt","w") as f:
+                                f.write("IDX  first/last name   time: D/M/Y H:M  direction\n")
+                                f.write("--- ----------------- ----------------- ---------\n")
+                                sqlite_select_query = """SELECT * from tbl"""
+                                cur.execute(sqlite_select_query)
+                                records = cur.fetchall()
+                                cur.execute("DROP TABLE tbl")
+                                conn.commit()
+                                conn.execute(f"""CREATE TABLE if not exists tbl (
+                                    key INTEGER PRIMARY KEY,
+                                    name TEXT NOT NULL,
+                                    time TEXT NOT NULL,
+                                    dir TEXT NOT NULL
+                                );""")
+                                conn.commit()
+                                for i,n,t,d in records:
+                                    f.write(f"{str(i).center(3)} {n.center(17)} {t.center(17)} {d.center(9)}\n")
+                
+                        else:
+                            pass
+                    except:
+                        pass
+                    
                 
         

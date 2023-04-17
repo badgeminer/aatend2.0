@@ -1,3 +1,10 @@
+"""
+    AutoAttendance 2.0
+    By Ben Hunt (Badgeminer2)
+
+    WINDOWS ONLY 
+
+"""
 import pygame,enum,sqlite3
 import win32cred
 import json, sys, datetime
@@ -155,7 +162,7 @@ while True:
                 cmd = mode.Tmenu
                 
             else:
-                cmd = mode.menu
+                cmd = mode.menu 
         except:
             cmd = mode.menu
     elif cmd == mode.hered:

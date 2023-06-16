@@ -1,10 +1,11 @@
-"""
-    AutoAttendance 2.0
-    By Ben Hunt (Badgeminer2)
+#"""
+#    AutoAttendance 2.0
+#    By Ben Hunt (Badgeminer2)
+#
+#    WINDOWS ONLY 
+#
+#"""
 
-    WINDOWS ONLY 
-
-"""
 import pygame,enum,sqlite3
 import win32cred
 import json, sys, datetime
